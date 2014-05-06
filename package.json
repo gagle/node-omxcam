@@ -1,0 +1,15 @@
+{
+  "name": "omxcam",
+  "version": "0.0.0",
+  "description": "Bindings for the omxcam C library",
+  "keywords": ["omxcam", "raspberrypi", "camera", "openmax", "raspistill",
+      "raspivid"],
+  "author": "Gabriel Llamas <gagle@outlook.com>",
+  "repository": "git://github.com/gagle/node-omxcam.git",
+  "engines": {
+    "node": ">=0.10"
+  },
+  "os": ["linux"],
+  "license": "MIT",
+  "main": "lib"
+}
