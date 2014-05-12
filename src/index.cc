@@ -2,7 +2,7 @@
 #include <node.h>
 #include <stdio.h>
 
-#include "omxcam.h"
+#include "../deps/omxcam/omxcam.h"
 
 using namespace v8;
 
@@ -23,11 +23,11 @@ Handle<Value> startVideo (const Arguments& args){
   
   printf ("startVideo\n");
   
-  Local<Function> onError = Local<Function>::Cast (args[1]);
-  Local<Function> onData = Local<Function>::Cast (args[2]);
+  //Local<Function> onError = Local<Function>::Cast (args[1]);
+  //Local<Function> onData = Local<Function>::Cast (args[2]);
   Local<Function> onEnd = Local<Function>::Cast (args[3]);
   
-  //onEnd->Call (Context::GetCurrent ()->Global (), 0, 0);
+  onEnd->Call (Context::GetCurrent ()->Global (), 0, 0);
   
   return scope.Close (Undefined ());
 }

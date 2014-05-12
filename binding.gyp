@@ -9,6 +9,7 @@
     },
     {
       "target_name": "omxcam",
+      "type": "static_library",
       "defines": [
         "STANDALONE",
         "__STDC_CONSTANT_MACROS",
@@ -29,12 +30,6 @@
         "USE_EXTERNAL_OMX",
         "OMXCAM_DEBUG"
       ],
-      "include_dirs": [
-        "/opt/vc/include",
-        "/opt/vc/include/interface/vcos/pthreads",
-        "/opt/vc/include/interface/vmcs_host/linux",
-        "deps/omxcam"
-      ],
       "cflags": [
         "-U_FORTIFY_SOURCE",
         "-ftree-vectorize",
@@ -54,6 +49,18 @@
         "-lvchiq_arm",
         "-lpthread",
       ],
+      "include_dirs": [
+        "/opt/vc/include",
+        "/opt/vc/include/interface/vcos/pthreads",
+        "/opt/vc/include/interface/vmcs_host/linux"
+      ],
+      "direct_dependent_settings": {
+        "include_dirs": [
+          "/opt/vc/include",
+          "/opt/vc/include/interface/vcos/pthreads",
+          "/opt/vc/include/interface/vmcs_host/linux"
+        ]
+      },
       "sources": [
         "deps/omxcam/omxcam_camera.c",
         "deps/omxcam/omxcam_core.c",
