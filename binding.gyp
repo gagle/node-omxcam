@@ -2,9 +2,7 @@
   "targets": [
     {
       "target_name": "addon",
-      "dependencies": [
-        "omxcam"
-      ],
+      "dependencies": ["omxcam"],
       "sources": ["src/index.cc"]
     },
     {
@@ -35,19 +33,10 @@
         "-ftree-vectorize",
         "-pipe",
         "-fPIC",
-        "-ftree-vectorize",
         "-Werror",
         "-g",
         "-Wall",
         "-O2"
-      ],
-      "ldflags": [
-        "-L/opt/vc/lib",
-        "-lopenmaxil",
-        "-lbcm_host",
-        "-lvcos",
-        "-lvchiq_arm",
-        "-lpthread",
       ],
       "include_dirs": [
         "/opt/vc/include",
@@ -59,6 +48,18 @@
           "/opt/vc/include",
           "/opt/vc/include/interface/vcos/pthreads",
           "/opt/vc/include/interface/vmcs_host/linux"
+        ]
+      },
+      "link_settings": {
+        "library_dirs": [
+          "/opt/vc/lib"
+        ],
+        "libraries": [
+          "-lopenmaxil",
+          "-lbcm_host",
+          "-lvcos",
+          "-lvchiq_arm",
+          "-lpthread"
         ]
       },
       "sources": [
