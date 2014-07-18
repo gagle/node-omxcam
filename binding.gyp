@@ -7,7 +7,7 @@
     },
     {
       "target_name": "omxcam",
-      "type": "static_library",
+			"type": "static_library",
       "defines": [
         "STANDALONE",
         "__STDC_CONSTANT_MACROS",
@@ -39,12 +39,14 @@
         "-O2"
       ],
       "include_dirs": [
+				"deps/omxcam/include",
         "/opt/vc/include",
         "/opt/vc/include/interface/vcos/pthreads",
         "/opt/vc/include/interface/vmcs_host/linux"
       ],
       "direct_dependent_settings": {
         "include_dirs": [
+					"deps/omxcam/include",
           "/opt/vc/include",
           "/opt/vc/include/interface/vcos/pthreads",
           "/opt/vc/include/interface/vmcs_host/linux"
@@ -63,16 +65,18 @@
         ]
       },
       "sources": [
-        "deps/omxcam/omxcam_camera.c",
-        "deps/omxcam/omxcam_core.c",
-        "deps/omxcam/omxcam_debug.c",
-        "deps/omxcam/omxcam_dump.c",
-        "deps/omxcam/omxcam_errors.c",
-        "deps/omxcam/omxcam_image_encode.c",
-        "deps/omxcam/omxcam_still.c",
-        "deps/omxcam/omxcam_utils.c",
-        "deps/omxcam/omxcam_video.c",
-        "deps/omxcam/omxcam_video_encode.c"
+        "deps/omxcam/src/camera.c",
+        "deps/omxcam/src/core.c",
+        "deps/omxcam/src/debug.c",
+        "deps/omxcam/src/dump_omx.c",
+        "deps/omxcam/src/error.c",
+        "deps/omxcam/src/event.c",
+        "deps/omxcam/src/h264.c",
+        "deps/omxcam/src/jpeg.c",
+        "deps/omxcam/src/still.c",
+        "deps/omxcam/src/utils.c",
+        "deps/omxcam/src/version.c",
+        "deps/omxcam/src/video.c",
       ]
     }
   ]

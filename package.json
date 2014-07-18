@@ -9,6 +9,9 @@
   "engines": {
     "node": ">=0.10"
   },
+	"devDependencies": {
+		"ws": "0.4.x"
+	},
   "os": ["linux"],
   "license": "MIT",
   "main": "lib"
