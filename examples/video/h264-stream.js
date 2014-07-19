@@ -8,10 +8,8 @@ var record = function (filename, settings, cb){
   
   var ws = fs.createWriteStream (filename)
       .on ("error", function (error){
-        vs.stop (function (){
-          //The error from stop() is ignored
-          cb (error);
-        });
+        err = error;
+        vs.stop ();
       })
       .on ("finish", function (){
         cb (err);
