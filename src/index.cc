@@ -321,8 +321,6 @@ Handle<Value> video_start (const Arguments& args){
   int args_length = args.Length ();
   
   if (args[1]->IsFunction ()){
-    if (!args[0]->IsObject ()) THROW_BAD_ARGUMENTS
-    
     video_buffer_baton_t* baton =
         (video_buffer_baton_t*)malloc (sizeof (video_buffer_baton_t));
     
@@ -331,7 +329,10 @@ Handle<Value> video_start (const Arguments& args){
         Local<Function>::Cast(args[args_length - 1]));
     
     omxcam_video_init (&baton->settings);
-    set_video_settings (args[0]->ToObject (), &baton->settings);
+    
+    if (args[0]->IsObject ()){
+      set_video_settings (args[0]->ToObject (), &baton->settings);
+    }
     
     uv_queue_work (uv_default_loop (), &baton->req, video_start_async,
         video_async_cb);

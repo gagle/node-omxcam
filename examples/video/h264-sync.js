@@ -33,12 +33,8 @@ var record = function (filename, settings, timeout){
 };
 
 try{
-  record ("video.h264", { width: 640, height: 480,
-      roi: { top: 0.5, left: 0.5, width: 0.5, height: 0.5 } }, 2000);
+  record ("video.h264", { width: 640, height: 480 }, 2000);
   console.log ("ok");
 }catch (error){
   console.error (error);
 }
-
-/*var video = omxcam.video ({ width: 640, height: 480 });
-video.start ();*/
