@@ -15,10 +15,12 @@ var startServer = function (cameraSettings, serverSettings, cb){
   var wss = new WebSocketServer (serverSettings);
   wss.broadcast = function (data){
     for (var client in this.clients){
-      this.clients[client].send (data,
-          function (error){
-            if (error) console.error (error);
-          });
+      this.clients[client].send (data, function (error){
+        if (error){
+          wss.close ();
+          cb (error);
+        }
+      });
     }
   };
   wss.on ("listening", function (){

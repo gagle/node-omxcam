@@ -15,6 +15,9 @@ var record = function (filename, settings, timeout, cb){
   var ws = fs.createWriteStream (filename)
       .on ("error", function (error){
         stop = true;
+      })
+      .on ("finish", function (){
+        cb ();
       });
   
   var read = function (error, buffer){
@@ -25,7 +28,7 @@ var record = function (filename, settings, timeout, cb){
     
     if (!updated && now >= update){
       updated = true;
-      video.update ({ saturation: 100 }, function (error){
+      return video.update ({ saturation: 100 }, function (error){
         if (error) return cb (error);
         video.read (read);
       });
@@ -35,8 +38,10 @@ var record = function (filename, settings, timeout, cb){
     if (!stop && now < end){
       video.read (read);
     }else{
-      ws.end ();
-      video.stop (cb);
+      video.stop (function (error){
+        if (error) return cb (error);
+        ws.end ();
+      });
     }
   };
 
