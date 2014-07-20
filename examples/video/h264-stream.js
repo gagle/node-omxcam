@@ -4,7 +4,7 @@ var fs = require ("fs");
 var omxcam = require ("../../lib");
 
 var record = function (filename, settings, cb){
-  var err;
+  var err = null;
   
   var ws = fs.createWriteStream (filename)
       .on ("error", function (error){

@@ -31,7 +31,7 @@ typedef struct {
     OMXCAM_ ## name ## _MAP (CONSTANT_VALUES);                                 \
     HandleScope scope;                                                         \
     return scope.Close (Undefined ());                                         \
-  }                                                                            \
+  }
 
 DEFINE_CONSTANTS (ISO)
 DEFINE_CONSTANTS (EXPOSURE)
@@ -40,6 +40,16 @@ DEFINE_CONSTANTS (ROTATION)
 DEFINE_CONSTANTS (METERING)
 DEFINE_CONSTANTS (WHITE_BALANCE)
 DEFINE_CONSTANTS (IMAGE_FILTER)
+
+Handle<Value> add_auto_constants (const Arguments& args){
+  Local<Object> obj = args[0]->ToObject ();
+  CONSTANT_VALUES (SHUTTER_SPEED_AUTO, _)
+  CONSTANT_VALUES (JPEG_THUMBNAIL_WIDTH_AUTO, _)
+  CONSTANT_VALUES (JPEG_THUMBNAIL_HEIGHT_AUTO, _)
+  CONSTANT_VALUES (H264_IDR_PERIOD_OFF, _)
+  HandleScope scope;
+  return scope.Close (Undefined ());
+}
 
 omxcam_bool bool_to_omxcam (bool value){
   return value ? OMXCAM_TRUE : OMXCAM_FALSE;
@@ -123,6 +133,7 @@ Handle<Value> set_camera_settings (
     if (!opt->IsUndefined ()){
       settings->color_effects.u = opt->Uint32Value ();
     }
+    
     opt = obj_nested->Get (String::NewSymbol ("v"));
     if (!opt->IsUndefined ()){
       settings->color_effects.v = opt->Uint32Value ();
@@ -139,7 +150,7 @@ Handle<Value> set_camera_settings (
     settings->metering = (omxcam_metering)opt->Int32Value ();
   }
   
-  opt = obj->Get (String::NewSymbol ("white_balance"));
+  opt = obj->Get (String::NewSymbol ("whiteBalance"));
   if (!opt->IsUndefined ()){
     if (!opt->IsObject ()) THROW_BAD_ARGUMENTS
     
@@ -149,18 +160,20 @@ Handle<Value> set_camera_settings (
     if (!opt->IsUndefined ()){
       settings->white_balance.mode = (omxcam_white_balance)opt->Int32Value ();
     }
-    opt = obj_nested->Get (String::NewSymbol ("red_gain"));
+    
+    opt = obj_nested->Get (String::NewSymbol ("redGain"));
     if (!opt->IsUndefined ()){
       settings->white_balance.red_gain = opt->Uint32Value ();
     }
-    opt = obj_nested->Get (String::NewSymbol ("blue_gain"));
+    
+    opt = obj_nested->Get (String::NewSymbol ("blueGain"));
     if (!opt->IsUndefined ()){
       settings->white_balance.blue_gain = opt->Uint32Value ();
     }
   }
   
-  opt = obj->Get (String::NewSymbol ("image_filter"));
-  if (!opt->IsUndefined ()){
+  opt = obj->Get (String::NewSymbol ("imageFilter"));
+  if (!opt->IsUndefined ()){printf("adasdasd\n");
     settings->image_filter = (omxcam_image_filter)opt->Int32Value ();
   }
   
@@ -174,14 +187,17 @@ Handle<Value> set_camera_settings (
     if (!opt->IsUndefined ()){
       settings->roi.top = (uint32_t)(opt->NumberValue ()*100);
     }
+    
     opt = obj_nested->Get (String::NewSymbol ("left"));
     if (!opt->IsUndefined ()){
       settings->roi.left = (uint32_t)(opt->NumberValue ()*100);
     }
+    
     opt = obj_nested->Get (String::NewSymbol ("width"));
     if (!opt->IsUndefined ()){
       settings->roi.width = (uint32_t)(opt->NumberValue ()*100);
     }
+    
     opt = obj_nested->Get (String::NewSymbol ("height"));
     if (!opt->IsUndefined ()){
       settings->roi.height = (uint32_t)(opt->NumberValue ()*100);
@@ -202,8 +218,40 @@ Handle<Value> set_camera_settings (
   return scope.Close (Undefined ());
 }
 
+Handle<Value> set_h264_settings (
+    Local<Object> obj,
+    omxcam_h264_settings_t* settings){
+  Local<Value> opt;
+  
+  opt = obj->Get (String::NewSymbol ("h264"));
+  if (!opt->IsUndefined ()){
+    if (!opt->IsObject ()) THROW_BAD_ARGUMENTS
+    
+    obj = opt->ToObject ();
+    
+    opt = obj->Get (String::NewSymbol ("bitrate"));
+    if (!opt->IsUndefined ()){
+      settings->bitrate = opt->Uint32Value ();
+    }
+    
+    opt = obj->Get (String::NewSymbol ("idrPeriod"));
+    if (!opt->IsUndefined ()){
+      settings->idr_period = opt->Uint32Value ();
+    }
+    
+    opt = obj->Get (String::NewSymbol ("sei"));
+    if (!opt->IsUndefined ()){
+      settings->sei = bool_to_omxcam (opt->BooleanValue ());
+    }
+  }
+  
+  HandleScope scope;
+  return scope.Close (Undefined ());
+}
+
 void set_video_settings (Local<Object> obj, omxcam_video_settings_t* settings){
   set_camera_settings (obj, &settings->camera);
+  set_h264_settings (obj, &settings->h264);
 }
 
 Handle<Value> video_read_task (){
@@ -431,6 +479,7 @@ void init (Handle<Object> exports){
       add_WHITE_BALANCE_constants);
   NODE_SET_METHOD (exports, "add_IMAGE_FILTER_constants",
       add_IMAGE_FILTER_constants);
+  NODE_SET_METHOD (exports, "add_auto_constants", add_auto_constants);
 }
 
 NODE_MODULE (addon, init)
