@@ -18,7 +18,7 @@ var startClient = function (filename, address, cb){
       .on ("finish", function (){
         if (err) return cb (err);
         cb ();
-      })
+      });
 
   var socket = new WebSocket (address)
       .on ("error", function (error){

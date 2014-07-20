@@ -14,6 +14,7 @@ var startServer = function (cameraSettings, serverSettings, cb){
   
   var wss = new WebSocketServer (serverSettings);
   wss.broadcast = function (data){
+    if (!this._server) return;
     for (var client in this.clients){
       this.clients[client].send (data, function (error){
         if (error){
