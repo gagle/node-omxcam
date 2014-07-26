@@ -7,6 +7,8 @@ var record = function (filename, settings, totalFrames){
   var fd = fs.openSync (filename, "w");
   var video = omxcam.video (settings);
   
+  settings = video.settings ();
+  
   video.start ();
   
   var buffer;
@@ -14,7 +16,6 @@ var record = function (filename, settings, totalFrames){
   var length;
   var stop = false;
   
-  //TODO use video.settings()
   var total = settings.width*settings.height*3*totalFrames;
   
   while (!stop){

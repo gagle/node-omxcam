@@ -123,7 +123,7 @@ omxcam_bool bool_to_omxcam (bool value){
   return value ? OMXCAM_TRUE : OMXCAM_FALSE;
 }
 
-int set_camera_settings (
+int camera_obj_to_settings (
     Local<Object> obj,
     omxcam_camera_settings_t* settings,
     video_boolean_settings_t* boolean_settings){
@@ -335,7 +335,7 @@ int set_camera_settings (
   return 0;
 }
 
-int set_h264_settings (Local<Object> obj, omxcam_h264_settings_t* settings){
+int h264_obj_to_settings (Local<Object> obj, omxcam_h264_settings_t* settings){
   Local<Value> opt;
   Local<Object> obj_nested;
   
@@ -386,9 +386,11 @@ int set_h264_settings (Local<Object> obj, omxcam_h264_settings_t* settings){
   return 0;
 }
 
-int set_video_settings (Local<Object> obj, omxcam_video_settings_t* settings){
-  if (set_camera_settings (obj, &settings->camera, 0)) return -1;
-  if (set_h264_settings (obj, &settings->h264)) return -1;
+int video_obj_to_settings (
+    Local<Object> obj,
+    omxcam_video_settings_t* settings){
+  if (camera_obj_to_settings (obj, &settings->camera, 0)) return -1;
+  if (h264_obj_to_settings (obj, &settings->h264)) return -1;
   
   Local<Value> opt = obj->Get (String::NewSymbol ("format"));
   if (!opt->IsUndefined ()){
@@ -396,6 +398,100 @@ int set_video_settings (Local<Object> obj, omxcam_video_settings_t* settings){
   }
   
   return 0;
+}
+
+void camera_settings_to_obj (
+    omxcam_camera_settings_t* settings,
+    Local<Object> obj){
+  Local<Object> obj_nested;
+  
+  obj->Set (String::NewSymbol ("width"), Uint32::New (settings->width));
+  obj->Set (String::NewSymbol ("height"), Uint32::New (settings->height));
+  obj->Set (String::NewSymbol ("sharpness"), Int32::New (settings->sharpness));
+  obj->Set (String::NewSymbol ("contrast"), Int32::New (settings->contrast));
+  obj->Set (String::NewSymbol ("brightness"),
+      Uint32::New (settings->brightness));
+  obj->Set (String::NewSymbol ("saturation"),
+      Int32::New (settings->saturation));
+  obj->Set (String::NewSymbol ("shutterSpeed"),
+      Uint32::New (settings->shutter_speed));
+  obj->Set (String::NewSymbol ("iso"), Int32::New (settings->iso));
+  obj->Set (String::NewSymbol ("exposure"), Int32::New (settings->exposure));
+  obj->Set (String::NewSymbol ("exposureCompensation"),
+      Int32::New (settings->exposure_compensation));
+  obj->Set (String::NewSymbol ("mirror"), Int32::New (settings->mirror));
+  obj->Set (String::NewSymbol ("rotation"), Int32::New (settings->rotation));
+  
+  obj_nested = Object::New ();
+  obj_nested->Set (String::NewSymbol ("enabled"),
+      Boolean::New (settings->color_effects.enabled));
+  obj_nested->Set (String::NewSymbol ("u"),
+      Boolean::New (settings->color_effects.u));
+  obj_nested->Set (String::NewSymbol ("v"),
+      Boolean::New (settings->color_effects.v));
+  obj->Set (String::NewSymbol ("colorEffects"), obj_nested);
+  
+  obj->Set (String::NewSymbol ("colorDenoise"),
+      Boolean::New (settings->color_denoise));
+  obj->Set (String::NewSymbol ("metering"), Int32::New (settings->metering));
+  
+  obj_nested = Object::New ();
+  obj_nested->Set (String::NewSymbol ("mode"),
+      Boolean::New (settings->white_balance.mode));
+  obj_nested->Set (String::NewSymbol ("redGain"),
+      Boolean::New (settings->white_balance.red_gain));
+  obj_nested->Set (String::NewSymbol ("blueGain"),
+      Boolean::New (settings->white_balance.blue_gain));
+  obj->Set (String::NewSymbol ("whiteBalance"), obj_nested);
+  
+  obj->Set (String::NewSymbol ("imageFilter"),
+      Int32::New (settings->image_filter));
+  
+  obj_nested = Object::New ();
+  obj_nested->Set (String::NewSymbol ("top"), Boolean::New (settings->roi.top));
+  obj_nested->Set (String::NewSymbol ("left"),
+      Boolean::New (settings->roi.left));
+  obj_nested->Set (String::NewSymbol ("width"),
+      Boolean::New (settings->roi.width));
+  obj_nested->Set (String::NewSymbol ("height"),
+      Boolean::New (settings->roi.height));
+  obj->Set (String::NewSymbol ("roi"), obj_nested);
+  
+  obj->Set (String::NewSymbol ("framerate"), Uint32::New (settings->framerate));
+  obj->Set (String::NewSymbol ("frameStabilisation"),
+      Boolean::New (settings->frame_stabilisation));
+}
+
+void h264_settings_to_obj (
+    omxcam_h264_settings_t* settings,
+    Local<Object> obj){
+  Local<Object> obj_nested;
+  Local<Object> obj_nested_2;
+  
+  obj_nested = Object::New ();
+  obj_nested->Set (String::NewSymbol ("bitrate"),
+      Uint32::New (settings->bitrate));
+  obj_nested->Set (String::NewSymbol ("idrPeriod"),
+      Uint32::New (settings->idr_period));
+  obj_nested->Set (String::NewSymbol ("sei"), Boolean::New (settings->sei));
+  
+  obj_nested_2 = Object::New ();
+  obj_nested_2->Set (String::NewSymbol ("enabled"),
+      Boolean::New (settings->eede.enabled));
+  obj_nested_2->Set (String::NewSymbol ("lossRate"),
+      Uint32::New (settings->eede.loss_rate));
+  obj_nested->Set (String::NewSymbol ("eede"), obj_nested_2);
+  
+  obj->Set (String::NewSymbol ("h264"), obj_nested);
+}
+
+void video_settings_to_obj (
+    omxcam_video_settings_t* settings,
+    Local<Object> obj){
+  camera_settings_to_obj (&settings->camera, obj);
+  h264_settings_to_obj (&settings->h264, obj);
+  
+  obj->Set (String::NewSymbol ("format"), Int32::New (settings->format));
 }
 
 Handle<Value> video_read_task (){
@@ -595,7 +691,7 @@ Handle<Value> video_start (const Arguments& args){
     omxcam_video_init (&baton->settings);
     
     if (args[0]->IsObject ()){
-      set_video_settings (args[0]->ToObject (), &baton->settings);
+      video_obj_to_settings (args[0]->ToObject (), &baton->settings);
     }
     
     uv_queue_work (uv_default_loop (), &baton->req, video_start_async,
@@ -605,7 +701,7 @@ Handle<Value> video_start (const Arguments& args){
     omxcam_video_init (&settings);
     
     if (args[0]->IsObject ()){
-      if (set_video_settings (args[0]->ToObject (), &settings)){
+      if (video_obj_to_settings (args[0]->ToObject (), &settings)){
         THROW_BAD_ARGUMENTS
       }
     }else if (!args[0]->IsUndefined ()){
@@ -671,7 +767,7 @@ Handle<Value> video_update (const Arguments& args){
     
     memset (&baton->boolean_settings, 0, sizeof (baton->boolean_settings));  
     
-    if (set_camera_settings (args[0]->ToObject (), &baton->settings.camera,
+    if (camera_obj_to_settings (args[0]->ToObject (), &baton->settings.camera,
         &baton->boolean_settings)){
       THROW_BAD_ARGUMENTS
     }
@@ -684,7 +780,7 @@ Handle<Value> video_update (const Arguments& args){
     
     memset (&boolean_settings, 0, sizeof (boolean_settings));  
     
-    if (set_camera_settings (args[0]->ToObject (), &settings.camera,
+    if (camera_obj_to_settings (args[0]->ToObject (), &settings.camera,
         &boolean_settings)){
       THROW_BAD_ARGUMENTS
     }
@@ -699,11 +795,28 @@ Handle<Value> video_update (const Arguments& args){
   return scope.Close (Undefined ());
 }
 
+Handle<Value> video_settings (const Arguments& args){
+  omxcam_video_settings_t settings;
+  omxcam_video_init (&settings);
+  
+  if (!args[0]->IsUndefined ()){
+    video_obj_to_settings (args[0]->ToObject (), &settings);
+  }
+  
+  Local<Object> obj = Object::New ();
+  
+  video_settings_to_obj (&settings, obj);
+  
+  HandleScope scope;
+  return scope.Close (obj);
+}
+
 void init (Handle<Object> exports){
   NODE_SET_METHOD (exports, "video_start", video_start);
   NODE_SET_METHOD (exports, "video_stop", video_stop);
   NODE_SET_METHOD (exports, "video_read", video_read);
   NODE_SET_METHOD (exports, "video_update", video_update);
+  NODE_SET_METHOD (exports, "video_settings", video_settings);
   
   NODE_SET_METHOD (exports, "add_ISO_constants", add_ISO_constants);
   NODE_SET_METHOD (exports, "add_EXPOSURE_constants", add_EXPOSURE_constants);

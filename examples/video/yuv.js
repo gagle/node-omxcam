@@ -7,7 +7,8 @@ var record = function (filename, settings, totalFrames){
   var fd = fs.openSync (filename, "w");
   var video = omxcam.video (settings);
   
-  //TODO use video.settings()
+  settings = video.settings ();
+  
   var planes = omxcam.yuvPlanes (settings.width, settings.height);
   var planesSlice = omxcam.yuvPlanesSlice (settings.width);
   var frameSize = planes.offsetV + planes.lengthV;
@@ -29,19 +30,16 @@ var record = function (filename, settings, totalFrames){
     slice = new Buffer (planesSlice.lengthY);
     buffer.copy (slice, 0, planesSlice.offsetY,
         planesSlice.offsetY + planesSlice.lengthY);
-    yLength += slice.length;
     yBuffers.push (slice);
     
     slice = new Buffer (planesSlice.lengthU);
     buffer.copy (slice, 0, planesSlice.offsetU,
         planesSlice.offsetU + planesSlice.lengthU);
-    uLength += slice.length;
     uBuffers.push (slice);
     
     slice = new Buffer (planesSlice.lengthV);
     buffer.copy (slice, 0, planesSlice.offsetV,
         planesSlice.offsetV + planesSlice.lengthV);
-    vLength += slice.length;
     vBuffers.push (slice);
     
     if (current === frameSize){
