@@ -19,7 +19,12 @@ var record = function (filename, settings, cb){
       .on ("error", function (error){
         err = error;
         ws.end ();
-      });
+      })
+      .on ("ready", function (){
+        setTimeout (function (){
+          vs.update ({ saturation: 100 });
+        }, 1000);
+      })
 
   vs.pipe (ws);
 };
