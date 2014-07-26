@@ -12,9 +12,30 @@ using namespace v8;
 using namespace node;
 
 typedef struct {
+  int sharpness;
+  int contrast;
+  int brightness;
+  int saturation;
+  int shutter_speed;
+  int iso;
+  int exposure;
+  int exposure_compensation;
+  int mirror;
+  int rotation;
+  int color_effects;
+  int color_denoise;
+  int metering;
+  int white_balance;
+  int image_filter;
+  int roi;
+  int frame_stabilisation;
+} video_boolean_settings_t;
+
+typedef struct {
   uv_work_t req;
   omxcam_buffer_t buffer;
   omxcam_video_settings_t settings;
+  video_boolean_settings_t boolean_settings;
   omxcam_errno error;
   Persistent<Function> cb;
 } video_buffer_baton_t;
@@ -57,85 +78,100 @@ omxcam_bool bool_to_omxcam (bool value){
 
 int set_camera_settings (
     Local<Object> obj,
-    omxcam_camera_settings_t* settings){
+    omxcam_camera_settings_t* settings,
+    video_boolean_settings_t* boolean_settings){
   Local<Value> opt;
   Local<Object> obj_nested;
   
-  opt = obj->Get (String::NewSymbol ("width"));
-  if (!opt->IsUndefined ()){
-    if (!opt->IsUint32 ()) return -1;
-    settings->width = opt->Uint32Value ();
-  }
+  if (!boolean_settings){
+    opt = obj->Get (String::NewSymbol ("width"));
+    if (!opt->IsUndefined ()){
+      if (!opt->IsUint32 ()) return -1;
+      settings->width = opt->Uint32Value ();
+    }
   
-  opt = obj->Get (String::NewSymbol ("height"));
-  if (!opt->IsUndefined ()){
-    if (!opt->IsUint32 ()) return -1;
-    settings->height = opt->Uint32Value ();
+    opt = obj->Get (String::NewSymbol ("height"));
+    if (!opt->IsUndefined ()){
+      if (!opt->IsUint32 ()) return -1;
+      settings->height = opt->Uint32Value ();
+    }
   }
   
   opt = obj->Get (String::NewSymbol ("sharpness"));
   if (!opt->IsUndefined ()){
     if (!opt->IsInt32 ()) return -1;
     settings->sharpness = opt->Int32Value ();
+    if (boolean_settings) boolean_settings->sharpness = 1;
   }
   
   opt = obj->Get (String::NewSymbol ("contrast"));
   if (!opt->IsUndefined ()){
     if (!opt->IsInt32 ()) return -1;
     settings->contrast = opt->Int32Value ();
+    if (boolean_settings) boolean_settings->contrast = 1;
   }
   
   opt = obj->Get (String::NewSymbol ("brightness"));
   if (!opt->IsUndefined ()){
     if (!opt->IsUint32 ()) return -1;
     settings->brightness = opt->Uint32Value ();
+    if (boolean_settings) boolean_settings->brightness = 1;
   }
   
   opt = obj->Get (String::NewSymbol ("saturation"));
   if (!opt->IsUndefined ()){
     if (!opt->IsInt32 ()) return -1;
     settings->saturation = opt->Int32Value ();
+    if (boolean_settings) boolean_settings->saturation = 1;
   }
   
-  opt = obj->Get (String::NewSymbol ("shutterSpeed"));
-  if (!opt->IsUndefined ()){
-    if (!opt->IsUint32 ()) return -1;
-    settings->shutter_speed = opt->Uint32Value ();
+  if (!boolean_settings){
+    opt = obj->Get (String::NewSymbol ("shutterSpeed"));
+    if (!opt->IsUndefined ()){
+      if (!opt->IsUint32 ()) return -1;
+      settings->shutter_speed = opt->Uint32Value ();
+    }
   }
   
   opt = obj->Get (String::NewSymbol ("iso"));
   if (!opt->IsUndefined ()){
     if (!opt->IsInt32 ()) return -1;
-    settings->iso = opt->Int32Value ();
+    settings->iso = (omxcam_iso)opt->Int32Value ();
+    if (boolean_settings) boolean_settings->iso = 1;
   }
   
   opt = obj->Get (String::NewSymbol ("exposure"));
   if (!opt->IsUndefined ()){
     if (!opt->IsInt32 ()) return -1;
     settings->exposure = (omxcam_exposure)opt->Int32Value ();
+    if (boolean_settings) boolean_settings->exposure = 1;
   }
   
   opt = obj->Get (String::NewSymbol ("exposureCompensation"));
   if (!opt->IsUndefined ()){
     if (!opt->IsInt32 ()) return -1;
     settings->exposure_compensation = opt->Int32Value ();
+    if (boolean_settings) boolean_settings->exposure_compensation = 1;
   }
   
   opt = obj->Get (String::NewSymbol ("mirror"));
   if (!opt->IsUndefined ()){
     if (!opt->IsInt32 ()) return -1;
     settings->mirror = (omxcam_mirror)opt->Int32Value ();
+    if (boolean_settings) boolean_settings->mirror = 1;
   }
   
   opt = obj->Get (String::NewSymbol ("rotation"));
   if (!opt->IsUndefined ()){
     if (!opt->IsInt32 ()) return -1;
     settings->rotation = (omxcam_rotation)opt->Int32Value ();
+    if (boolean_settings) boolean_settings->rotation = 1;
   }
   
   opt = obj->Get (String::NewSymbol ("colorEffects"));
   if (!opt->IsUndefined ()){
     if (!opt->IsObject ()) return -1;
+    if (boolean_settings) boolean_settings->color_effects = 1;
     
     settings->color_effects.enabled = OMXCAM_TRUE;
     
@@ -154,21 +190,25 @@ int set_camera_settings (
     }
   }
   
-  opt = obj->Get (String::NewSymbol ("colorDenoise"));
-  if (!opt->IsUndefined ()){
-    if (!opt->IsBoolean ()) return -1;
-    settings->color_denoise = bool_to_omxcam (opt->BooleanValue ());
+  if (!boolean_settings){
+    opt = obj->Get (String::NewSymbol ("colorDenoise"));
+    if (!opt->IsUndefined ()){
+      if (!opt->IsBoolean ()) return -1;
+      settings->color_denoise = bool_to_omxcam (opt->BooleanValue ());
+    }
   }
   
   opt = obj->Get (String::NewSymbol ("metering"));
   if (!opt->IsUndefined ()){
     if (!opt->IsInt32 ()) return -1;
     settings->metering = (omxcam_metering)opt->Int32Value ();
+    if (boolean_settings) boolean_settings->metering = 1;
   }
   
   opt = obj->Get (String::NewSymbol ("whiteBalance"));
   if (!opt->IsUndefined ()){
     if (!opt->IsObject ()) return -1;
+    if (boolean_settings) boolean_settings->white_balance = 1;
     
     obj_nested = opt->ToObject ();
     
@@ -195,11 +235,13 @@ int set_camera_settings (
   if (!opt->IsUndefined ()){
     if (!opt->IsInt32 ()) return -1;
     settings->image_filter = (omxcam_image_filter)opt->Int32Value ();
+    if (boolean_settings) boolean_settings->image_filter = 1;
   }
   
   opt = obj->Get (String::NewSymbol ("roi"));
   if (!opt->IsUndefined ()){
     if (!opt->IsObject ()) return -1;
+    if (boolean_settings) boolean_settings->roi = 1;
     
     obj_nested = opt->ToObject ();
     
@@ -228,16 +270,19 @@ int set_camera_settings (
     }
   }
   
-  opt = obj->Get (String::NewSymbol ("framerate"));
-  if (!opt->IsUndefined ()){
-    if (!opt->IsUint32 ()) return -1;
-    settings->framerate = opt->Uint32Value ();
+  if (!boolean_settings){
+    opt = obj->Get (String::NewSymbol ("framerate"));
+    if (!opt->IsUndefined ()){
+      if (!opt->IsUint32 ()) return -1;
+      settings->framerate = opt->Uint32Value ();
+    }
   }
   
   opt = obj->Get (String::NewSymbol ("frameStabilisation"));
   if (!opt->IsUndefined ()){
     if (!opt->IsBoolean ()) return -1;
     settings->frame_stabilisation = bool_to_omxcam (opt->BooleanValue ());
+    if (boolean_settings) boolean_settings->frame_stabilisation = 1;
   }
   
   return 0;
@@ -295,7 +340,7 @@ int set_h264_settings (Local<Object> obj, omxcam_h264_settings_t* settings){
 }
 
 int set_video_settings (Local<Object> obj, omxcam_video_settings_t* settings){
-  if (set_camera_settings (obj, &settings->camera)) return -1;
+  if (set_camera_settings (obj, &settings->camera, 0)) return -1;
   return set_h264_settings (obj, &settings->h264);
 }
 
@@ -323,7 +368,81 @@ Handle<Value> video_read_task (){
   return scope.Close (buffer_constructor->NewInstance (3, constructor_args));
 }
 
-int video_update_task (){
+int video_update_task (omxcam_camera_settings_t* settings,
+    video_boolean_settings_t* boolean_settings){
+  if (boolean_settings->sharpness &&
+      omxcam_video_update_sharpness (settings->sharpness)){
+    return -1;
+  }
+  
+  if (boolean_settings->contrast &&
+      omxcam_video_update_contrast (settings->contrast)){
+    return -1;
+  }
+  
+  if (boolean_settings->brightness &&
+      omxcam_video_update_brightness (settings->brightness)){
+    return -1;
+  }
+  
+  if (boolean_settings->saturation &&
+      omxcam_video_update_saturation (settings->saturation)){
+    return -1;
+  }
+  
+  if (boolean_settings->iso && omxcam_video_update_iso (settings->iso)){
+    return -1;
+  }
+  
+  if (boolean_settings->exposure &&
+      omxcam_video_update_exposure (settings->exposure)){
+    return -1;
+  }
+  
+  if (boolean_settings->exposure_compensation &&
+      omxcam_video_update_contrast (settings->exposure_compensation)){
+    return -1;
+  }
+  
+  if (boolean_settings->mirror &&
+      omxcam_video_update_mirror (settings->mirror)){
+    return -1;
+  }
+  
+  if (boolean_settings->rotation &&
+      omxcam_video_update_rotation (settings->rotation)){
+    return -1;
+  }
+  
+  if (boolean_settings->color_effects &&
+      omxcam_video_update_color_effects (&settings->color_effects)){
+    return -1;
+  }
+  
+  if (boolean_settings->metering &&
+      omxcam_video_update_metering (settings->metering)){
+    return -1;
+  }
+  
+  if (boolean_settings->white_balance &&
+      omxcam_video_update_white_balance (&settings->white_balance)){
+    return -1;
+  }
+  
+  if (boolean_settings->image_filter &&
+      omxcam_video_update_image_filter (settings->image_filter)){
+    return -1;
+  }
+  
+  if (boolean_settings->roi && omxcam_video_update_roi (&settings->roi)){
+    return -1;
+  }
+  
+  if (boolean_settings->frame_stabilisation &&
+      omxcam_video_update_frame_stabilisation (settings->frame_stabilisation)){
+    return -1;
+  }
+  
   return 0;
 }
 
@@ -341,9 +460,7 @@ void video_stop_async (uv_work_t* req){
 
 void video_update_async (uv_work_t* req){
   video_buffer_baton_t* baton = (video_buffer_baton_t*)req->data;
-  
-  
-  
+  video_update_task (&baton->settings.camera, &baton->boolean_settings);
   baton->error = omxcam_last_error ();
 }
 
@@ -491,20 +608,37 @@ Handle<Value> video_read (const Arguments& args){
 }
 
 Handle<Value> video_update (const Arguments& args){
-  if (args.Length () == 2){
+  if (args[1]->IsFunction ()){
     video_buffer_baton_t* baton =
         (video_buffer_baton_t*)malloc (sizeof (video_buffer_baton_t));
     
     baton->req.data = (void*)baton;
     baton->cb = Persistent<Function>::New (Local<Function>::Cast(args[1]));
     
+    memset (&baton->boolean_settings, 0, sizeof (baton->boolean_settings));  
+    
+    if (set_camera_settings (args[0]->ToObject (), &baton->settings.camera,
+        &baton->boolean_settings)){
+      THROW_BAD_ARGUMENTS
+    }
+    
     uv_queue_work (uv_default_loop (), &baton->req, video_update_async,
         video_async_cb);
   }else{
-    /*if (video_update_task ()){
+    omxcam_video_settings_t settings;
+    video_boolean_settings_t boolean_settings;
+    
+    memset (&boolean_settings, 0, sizeof (boolean_settings));  
+    
+    if (set_camera_settings (args[0]->ToObject (), &settings.camera,
+        &boolean_settings)){
+      THROW_BAD_ARGUMENTS
+    }
+    
+    if (video_update_task (&settings.camera, &boolean_settings)){
       return ThrowException (Exception::Error (String::New (
           omxcam_strerror (omxcam_last_error ()))));
-    }*/
+    }
   }
   
   HandleScope scope;
