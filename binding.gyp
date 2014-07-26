@@ -7,7 +7,7 @@
     },
     {
       "target_name": "omxcam",
-			"type": "static_library",
+      "type": "static_library",
       "defines": [
         "STANDALONE",
         "__STDC_CONSTANT_MACROS",
@@ -25,8 +25,7 @@
         "HAVE_LIBBCM_HOST",
         "USE_EXTERNAL_LIBBCM_HOST",
         "USE_VCHIQ_ARM",
-        "USE_EXTERNAL_OMX",
-        "OMXCAM_DEBUG"
+        "USE_EXTERNAL_OMX"
       ],
       "cflags": [
         "-U_FORTIFY_SOURCE",
@@ -39,14 +38,14 @@
         "-O2"
       ],
       "include_dirs": [
-				"deps/omxcam/include",
+        "deps/omxcam/include",
         "/opt/vc/include",
         "/opt/vc/include/interface/vcos/pthreads",
         "/opt/vc/include/interface/vmcs_host/linux"
       ],
       "direct_dependent_settings": {
         "include_dirs": [
-					"deps/omxcam/include",
+          "deps/omxcam/include",
           "/opt/vc/include",
           "/opt/vc/include/interface/vcos/pthreads",
           "/opt/vc/include/interface/vmcs_host/linux"
