@@ -25,7 +25,8 @@
         "HAVE_LIBBCM_HOST",
         "USE_EXTERNAL_LIBBCM_HOST",
         "USE_VCHIQ_ARM",
-        "USE_EXTERNAL_OMX"
+        "USE_EXTERNAL_OMX",
+        "OMXCAM_DEBUG"
       ],
       "cflags": [
         "-U_FORTIFY_SOURCE",

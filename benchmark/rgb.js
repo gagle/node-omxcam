@@ -15,7 +15,7 @@ module.exports.video = function (req){
   
   video.start ();
   
-  req.start ();
+  req.onReady ();
   
   while (true){
     buffer = video.read ();
@@ -24,7 +24,7 @@ module.exports.video = function (req){
     if (current >= total) break;
   }
   
-  req.stop ();
+  req.onStop ();
   
   video.stop ();
 };

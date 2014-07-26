@@ -18,7 +18,7 @@ module.exports.video = function (req){
   
   video.start ();
   
-  req.start ();
+  req.onReady ();
   
   while (true){
     buffer = video.read ();
@@ -31,7 +31,7 @@ module.exports.video = function (req){
     }
   }
   
-  req.stop ();
+  req.onStop ();
   
   video.stop ();
 };
