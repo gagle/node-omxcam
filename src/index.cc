@@ -72,6 +72,53 @@ Handle<Value> add_auto_constants (const Arguments& args){
   return scope.Close (Undefined ());
 }
 
+Handle<Value> add_format_constants (const Arguments& args){
+  Local<Object> obj = args[0]->ToObject ();
+  CONSTANT_VALUES (FORMAT_RGB888, _)
+  CONSTANT_VALUES (FORMAT_RGBA8888, _)
+  CONSTANT_VALUES (FORMAT_YUV420, _)
+  CONSTANT_VALUES (FORMAT_H264, _)
+  CONSTANT_VALUES (FORMAT_JPEG, _)
+  HandleScope scope;
+  return scope.Close (Undefined ());
+}
+
+Handle<Value> yuv_planes (const Arguments& args){
+  if (!args[0]->IsUint32 () || !args[1]->IsUint32 ()) THROW_BAD_ARGUMENTS
+  
+  omxcam_yuv_planes_t planes;
+  omxcam_yuv_planes (args[0]->Uint32Value (), args[1]->Uint32Value (), &planes);
+  
+  Local<Object> obj = Object::New ();
+  obj->Set (String::New ("offsetY"), Uint32::New (planes.offset_y));
+  obj->Set (String::New ("lengthY"), Uint32::New (planes.length_y));
+  obj->Set (String::New ("offsetU"), Uint32::New (planes.offset_u));
+  obj->Set (String::New ("lengthU"), Uint32::New (planes.length_u));
+  obj->Set (String::New ("offsetV"), Uint32::New (planes.offset_v));
+  obj->Set (String::New ("lengthV"), Uint32::New (planes.length_v));
+  
+  HandleScope scope;
+  return scope.Close (obj);
+}
+
+Handle<Value> yuv_planes_slice (const Arguments& args){
+  if (!args[0]->IsUint32 ()) THROW_BAD_ARGUMENTS
+  
+  omxcam_yuv_planes_t planes;
+  omxcam_yuv_planes_slice (args[0]->Uint32Value (), &planes);
+  
+  Local<Object> obj = Object::New ();
+  obj->Set (String::New ("offsetY"), Uint32::New (planes.offset_y));
+  obj->Set (String::New ("lengthY"), Uint32::New (planes.length_y));
+  obj->Set (String::New ("offsetU"), Uint32::New (planes.offset_u));
+  obj->Set (String::New ("lengthU"), Uint32::New (planes.length_u));
+  obj->Set (String::New ("offsetV"), Uint32::New (planes.offset_v));
+  obj->Set (String::New ("lengthV"), Uint32::New (planes.length_v));
+  
+  HandleScope scope;
+  return scope.Close (obj);
+}
+
 omxcam_bool bool_to_omxcam (bool value){
   return value ? OMXCAM_TRUE : OMXCAM_FALSE;
 }
@@ -341,7 +388,14 @@ int set_h264_settings (Local<Object> obj, omxcam_h264_settings_t* settings){
 
 int set_video_settings (Local<Object> obj, omxcam_video_settings_t* settings){
   if (set_camera_settings (obj, &settings->camera, 0)) return -1;
-  return set_h264_settings (obj, &settings->h264);
+  if (set_h264_settings (obj, &settings->h264)) return -1;
+  
+  Local<Value> opt = obj->Get (String::NewSymbol ("format"));
+  if (!opt->IsUndefined ()){
+    settings->format = (omxcam_format)opt->Int32Value ();
+  }
+  
+  return 0;
 }
 
 Handle<Value> video_read_task (){
@@ -661,6 +715,10 @@ void init (Handle<Object> exports){
   NODE_SET_METHOD (exports, "add_IMAGE_FILTER_constants",
       add_IMAGE_FILTER_constants);
   NODE_SET_METHOD (exports, "add_auto_constants", add_auto_constants);
+  NODE_SET_METHOD (exports, "add_format_constants", add_format_constants);
+  
+  NODE_SET_METHOD (exports, "yuv_planes", yuv_planes);
+  NODE_SET_METHOD (exports, "yuv_planes_slice", yuv_planes_slice);
 }
 
 NODE_MODULE (addon, init)
