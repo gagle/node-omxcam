@@ -3,7 +3,7 @@
 var fs = require ("fs");
 var omxcam = require ("../../lib");
 
-var record = function (filename, settings, cb){
+var record = function (filename, settings, updateSettings, cb){
   var err = null;
   
   var ws = fs.createWriteStream (filename)
@@ -22,7 +22,7 @@ var record = function (filename, settings, cb){
       })
       .on ("ready", function (){
         setTimeout (function (){
-          vs.update ({ saturation: 100 });
+          vs.update (updateSettings);
         }, 1000);
       })
 
@@ -30,7 +30,7 @@ var record = function (filename, settings, cb){
 };
 
 record ("video.h264", { width: 640, height: 480, timeout: 2000 },
-    function (error){
+    { saturation: 100 }, function (error){
       if (error) return console.error (error);
       console.log ("ok");
     });

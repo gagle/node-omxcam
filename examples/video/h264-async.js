@@ -3,7 +3,7 @@
 var fs = require ("fs");
 var omxcam = require ("../../lib");
 
-var record = function (filename, settings, timeout, cb){
+var record = function (filename, settings, updateSettings, timeout, cb){
   var now;
   var end;
   var update;
@@ -28,7 +28,7 @@ var record = function (filename, settings, timeout, cb){
     
     if (!updated && now >= update){
       updated = true;
-      return video.update ({ saturation: 100 }, function (error){
+      return video.update (updateSettings, function (error){
         if (error) return cb (error);
         video.read (read);
       });
@@ -56,7 +56,8 @@ var record = function (filename, settings, timeout, cb){
   });
 };
 
-record ("video.h264", { width: 640, height: 480 }, 2000, function (error){
-  if (error) return console.error (error);
-  console.log ("ok");
-});
+record ("video.h264", { width: 640, height: 480 }, { saturation: 100 }, 2000,
+    function (error){
+      if (error) return console.error (error);
+      console.log ("ok");
+    });

@@ -61,6 +61,7 @@ DEFINE_CONSTANTS (ROTATION)
 DEFINE_CONSTANTS (METERING)
 DEFINE_CONSTANTS (WHITE_BALANCE)
 DEFINE_CONSTANTS (IMAGE_FILTER)
+DEFINE_CONSTANTS (H264_AVC_PROFILE)
 
 Handle<Value> add_auto_constants (const Arguments& args){
   Local<Object> obj = args[0]->ToObject ();
@@ -68,6 +69,7 @@ Handle<Value> add_auto_constants (const Arguments& args){
   CONSTANT_VALUES (JPEG_THUMBNAIL_WIDTH_AUTO, _)
   CONSTANT_VALUES (JPEG_THUMBNAIL_HEIGHT_AUTO, _)
   CONSTANT_VALUES (H264_IDR_PERIOD_OFF, _)
+  CONSTANT_VALUES (H264_QP_OFF, _)
   HandleScope scope;
   return scope.Close (Undefined ());
 }
@@ -381,6 +383,12 @@ int h264_obj_to_settings (Local<Object> obj, omxcam_h264_settings_t* settings){
         settings->eede.loss_rate = (uint32_t)(opt->NumberValue ()*100);
       }
     }
+    
+    opt = obj->Get (String::NewSymbol ("profile"));
+    if (!opt->IsUndefined ()){
+      if (!opt->IsInt32 ()) return -1;
+      settings->profile = (omxcam_avc_profile)opt->Int32Value ();
+    }
   }
   
   return 0;
@@ -481,6 +489,9 @@ void h264_settings_to_obj (
   obj_nested_2->Set (String::NewSymbol ("lossRate"),
       Uint32::New (settings->eede.loss_rate));
   obj_nested->Set (String::NewSymbol ("eede"), obj_nested_2);
+  
+  obj_nested->Set (String::NewSymbol ("profile"),
+      Int32::New (settings->profile));
   
   obj->Set (String::NewSymbol ("h264"), obj_nested);
 }
@@ -758,6 +769,8 @@ Handle<Value> video_read (const Arguments& args){
 }
 
 Handle<Value> video_update (const Arguments& args){
+  if (!args[0]->IsObject ()) THROW_BAD_ARGUMENTS
+  
   if (args[1]->IsFunction ()){
     video_buffer_baton_t* baton =
         (video_buffer_baton_t*)malloc (sizeof (video_buffer_baton_t));
@@ -827,6 +840,8 @@ void init (Handle<Object> exports){
       add_WHITE_BALANCE_constants);
   NODE_SET_METHOD (exports, "add_IMAGE_FILTER_constants",
       add_IMAGE_FILTER_constants);
+  NODE_SET_METHOD (exports, "add_H264_AVC_PROFILE_constants",
+      add_H264_AVC_PROFILE_constants);
   NODE_SET_METHOD (exports, "add_auto_constants", add_auto_constants);
   NODE_SET_METHOD (exports, "add_format_constants", add_format_constants);
   
