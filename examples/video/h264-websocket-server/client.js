@@ -5,6 +5,7 @@ var fs = require ("fs");
 
 var startClient = function (filename, address, cb){
   var err;
+  var sps = false;
   
   process.on ("SIGINT", function (){
     socket.close ();
@@ -19,7 +20,7 @@ var startClient = function (filename, address, cb){
         if (err) return cb (err);
         cb ();
       });
-
+  
   var socket = new WebSocket (address)
       .on ("error", function (error){
         err = error;
@@ -34,6 +35,11 @@ var startClient = function (filename, address, cb){
         ws.end ();
       })
       .on ("message", function (data){
+        //Wait until an SPS message is received
+        if (!sps){
+          if ((data[4] & 0x07) !== 0x07) return;
+          sps = true;
+        }
         ws.write (data);
       });
 };

@@ -389,6 +389,12 @@ int h264_obj_to_settings (Local<Object> obj, omxcam_h264_settings_t* settings){
       if (!opt->IsInt32 ()) return -1;
       settings->profile = (omxcam_avc_profile)opt->Int32Value ();
     }
+    
+    opt = obj->Get (String::NewSymbol ("inlineHeaders"));
+    if (!opt->IsUndefined ()){
+      if (!opt->IsBoolean ()) return -1;
+      settings->inline_headers = bool_to_omxcam (opt->BooleanValue ());
+    }
   }
   
   return 0;
@@ -492,6 +498,8 @@ void h264_settings_to_obj (
   
   obj_nested->Set (String::NewSymbol ("profile"),
       Int32::New (settings->profile));
+  obj_nested->Set (String::NewSymbol ("inlineHeaders"),
+      Boolean::New (settings->inline_headers));
   
   obj->Set (String::NewSymbol ("h264"), obj_nested);
 }
