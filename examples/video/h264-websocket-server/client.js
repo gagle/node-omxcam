@@ -37,7 +37,7 @@ var startClient = function (filename, address, cb){
       .on ("message", function (data){
         //Wait until an SPS message is received
         if (!sps){
-          if ((data[4] & 0x07) !== 0x07) return;
+          if (!(data[4] & 0x07)) return;
           sps = true;
         }
         ws.write (data);
