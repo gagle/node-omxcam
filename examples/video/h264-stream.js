@@ -13,7 +13,7 @@ var record = function (filename, settings, updateSettings, cb){
       })
       .on ("finish", function (){
         cb (err);
-      })
+      });
 
   var vs = omxcam.createVideoStream (settings)
       .on ("error", function (error){
@@ -24,7 +24,7 @@ var record = function (filename, settings, updateSettings, cb){
         setTimeout (function (){
           vs.update (updateSettings);
         }, 1000);
-      })
+      });
 
   vs.pipe (ws);
 };

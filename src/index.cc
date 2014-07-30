@@ -35,6 +35,7 @@ typedef struct {
   uv_work_t req;
   omxcam_buffer_t buffer;
   omxcam_video_settings_t settings;
+  omxcam_bool is_motion_vector;
   video_boolean_settings_t boolean_settings;
   omxcam_errno error;
   Persistent<Function> cb;
@@ -395,6 +396,12 @@ int h264_obj_to_settings (Local<Object> obj, omxcam_h264_settings_t* settings){
       if (!opt->IsBoolean ()) return -1;
       settings->inline_headers = bool_to_omxcam (opt->BooleanValue ());
     }
+    
+    opt = obj->Get (String::NewSymbol ("inlineMotionVectors"));
+    if (!opt->IsUndefined ()){
+      if (!opt->IsBoolean ()) return -1;
+      settings->inline_motion_vectors = bool_to_omxcam (opt->BooleanValue ());
+    }
   }
   
   return 0;
@@ -500,6 +507,8 @@ void h264_settings_to_obj (
       Int32::New (settings->profile));
   obj_nested->Set (String::NewSymbol ("inlineHeaders"),
       Boolean::New (settings->inline_headers));
+  obj_nested->Set (String::NewSymbol ("inlineMotionVectors"),
+      Boolean::New (settings->inline_motion_vectors));
   
   obj->Set (String::NewSymbol ("h264"), obj_nested);
 }
@@ -513,23 +522,17 @@ void video_settings_to_obj (
   obj->Set (String::NewSymbol ("format"), Int32::New (settings->format));
 }
 
-Handle<Value> video_read_task (){
-  omxcam_buffer_t buffer;
-  if (omxcam_video_read_npt (&buffer)){
-    return ThrowException (Exception::Error (String::New (
-        omxcam_strerror (omxcam_last_error ()))));
-  }
-  
+Local<Object> create_buffer (omxcam_buffer_t* buffer){
   Local<Object> global = Context::GetCurrent ()->Global ();
 
-  Buffer* slow_buffer = Buffer::New (buffer.length);
-  memcpy (Buffer::Data (slow_buffer), buffer.data, buffer.length);
+  Buffer* slow_buffer = Buffer::New (buffer->length);
+  memcpy (Buffer::Data (slow_buffer), buffer->data, buffer->length);
 
   Local<Function> buffer_constructor =
       Local<Function>::Cast (global->Get (String::New ("Buffer")));
   Handle<Value> constructor_args[3] = {
     slow_buffer->handle_,
-    Uint32::New (buffer.length),
+    Uint32::New (buffer->length),
     Uint32::New (0)
   };
   
@@ -656,8 +659,15 @@ void video_async_cb (uv_work_t* req, int status){
 
 void video_read_async (uv_work_t* req){
   video_buffer_baton_t* baton = (video_buffer_baton_t*)req->data;
-  omxcam_video_read_npt (&baton->buffer);
+  omxcam_video_read_npt (&baton->buffer, &baton->is_motion_vector);
   baton->error = omxcam_last_error ();
+}
+
+void video_set_motion_vector_property (
+    Local<Object> buffer,
+    omxcam_bool is_motion_vector){
+  buffer->Set (String::New ("isMotionVector"),
+      is_motion_vector ? True () : False ());
 }
 
 void video_read_async_cb (uv_work_t* req, int status){
@@ -683,7 +693,10 @@ void video_read_async_cb (uv_work_t* req, int status){
       Uint32::New (0)
     };
     argv[0] = Null ();
-    argv[1] = buffer_constructor->NewInstance (3, constructor_args);
+    Local<Object> buff = buffer_constructor->NewInstance (3, constructor_args);
+    argv[1] = buff;
+    
+    video_set_motion_vector_property (buff, baton->is_motion_vector);
   }
   
   TryCatch try_catch;
@@ -772,7 +785,15 @@ Handle<Value> video_read (const Arguments& args){
     HandleScope scope;
     return scope.Close (Undefined ());
   }else{
-    return video_read_task ();
+    omxcam_buffer_t buffer;
+    omxcam_bool is_motion_vector;
+    if (omxcam_video_read_npt (&buffer, &is_motion_vector)){
+      return ThrowException (Exception::Error (String::New (
+          omxcam_strerror (omxcam_last_error ()))));
+    }
+    Local<Object> buff = create_buffer (&buffer);
+    video_set_motion_vector_property (buff, is_motion_vector);
+    return buff;
   }
 }
 

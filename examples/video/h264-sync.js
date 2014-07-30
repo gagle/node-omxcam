@@ -7,7 +7,7 @@ var record = function (filename, settings, updateSettings, timeout){
   var stop = false;
   var fd = fs.openSync (filename, "w");
   
-  var video = omxcam.video (settings);//console.log(video.settings ())
+  var video = omxcam.video (settings);
   video.start ();
   
   var now = Date.now ();
@@ -38,11 +38,3 @@ try{
 }catch (error){
   console.error (error);
 }
-
-/*var video = omxcam.video ();
-video.start (function (error){console.log(1)
-  if (error) return console.error (1, error);
-});
-video.update ({saturation:100}, function (error){console.log(2)
-  if (error) return console.error (2, error);
-});*/
