@@ -37,7 +37,8 @@ var record = function (filename, settings, totalFrames){
 
 try{
   record ("video.rgb",
-      { format: omxcam.FORMAT_RGB888, width: 640, height: 480 }, 10);
+      { format: omxcam.FORMAT_RGB888, width: 640, height: 480,
+      h264: { inlineMotionVectors: true } }, 10);
   console.log ("ok");
 }catch (error){
   console.error (error);

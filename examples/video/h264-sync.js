@@ -38,3 +38,11 @@ try{
 }catch (error){
   console.error (error);
 }
+
+/*var video = omxcam.video ();
+video.start (function (error){console.log(1)
+  if (error) return console.error (1, error);
+});
+video.update ({saturation:100}, function (error){console.log(2)
+  if (error) return console.error (2, error);
+});*/
