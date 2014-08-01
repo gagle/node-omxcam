@@ -62,6 +62,7 @@ DEFINE_CONSTANTS (ROTATION)
 DEFINE_CONSTANTS (METERING)
 DEFINE_CONSTANTS (WHITE_BALANCE)
 DEFINE_CONSTANTS (IMAGE_FILTER)
+DEFINE_CONSTANTS (DRC)
 DEFINE_CONSTANTS (H264_AVC_PROFILE)
 
 Handle<Value> add_auto_constants (const Arguments& args){
@@ -288,6 +289,12 @@ int camera_obj_to_settings (
     if (boolean_settings) boolean_settings->image_filter = 1;
   }
   
+  opt = obj->Get (String::NewSymbol ("drc"));
+  if (!opt->IsUndefined ()){
+    if (!opt->IsInt32 ()) return -1;
+    settings->drc = (omxcam_drc)opt->Int32Value ();
+  }
+  
   opt = obj->Get (String::NewSymbol ("roi"));
   if (!opt->IsUndefined ()){
     if (!opt->IsObject ()) return -1;
@@ -467,6 +474,7 @@ void camera_settings_to_obj (
   
   obj->Set (String::NewSymbol ("imageFilter"),
       Int32::New (settings->image_filter));
+  obj->Set (String::NewSymbol ("drc"), Int32::New (settings->drc));
   
   obj_nested = Object::New ();
   obj_nested->Set (String::NewSymbol ("top"), Boolean::New (settings->roi.top));
@@ -869,6 +877,7 @@ void init (Handle<Object> exports){
       add_WHITE_BALANCE_constants);
   NODE_SET_METHOD (exports, "add_IMAGE_FILTER_constants",
       add_IMAGE_FILTER_constants);
+  NODE_SET_METHOD (exports, "add_DRC_constants", add_DRC_constants);
   NODE_SET_METHOD (exports, "add_H264_AVC_PROFILE_constants",
       add_H264_AVC_PROFILE_constants);
   NODE_SET_METHOD (exports, "add_auto_constants", add_auto_constants);

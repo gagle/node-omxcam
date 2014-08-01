@@ -7,8 +7,8 @@ var record = function (filename, settings, updateSettings, timeout){
   var stop = false;
   var fd = fs.openSync (filename, "w");
   
-  var video = omxcam.video (settings);
-  video.start ();
+  var video = omxcam.video (settings);console.log(video.settings ())
+  /*video.start ();
   
   var now = Date.now ();
   var end = now + timeout;
@@ -28,7 +28,7 @@ var record = function (filename, settings, updateSettings, timeout){
     if (now >= end) break;
   }
   
-  video.stop ();
+  video.stop ();*/
   fs.closeSync (fd);
 };
 
