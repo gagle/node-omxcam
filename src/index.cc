@@ -454,9 +454,9 @@ void camera_settings_to_obj (
   obj_nested->Set (String::NewSymbol ("enabled"),
       Boolean::New (settings->color_effects.enabled));
   obj_nested->Set (String::NewSymbol ("u"),
-      Boolean::New (settings->color_effects.u));
+      Uint32::New (settings->color_effects.u));
   obj_nested->Set (String::NewSymbol ("v"),
-      Boolean::New (settings->color_effects.v));
+      Uint32::New (settings->color_effects.v));
   obj->Set (String::NewSymbol ("colorEffects"), obj_nested);
   
   obj->Set (String::NewSymbol ("colorDenoise"),
@@ -467,9 +467,9 @@ void camera_settings_to_obj (
   obj_nested->Set (String::NewSymbol ("mode"),
       Boolean::New (settings->white_balance.mode));
   obj_nested->Set (String::NewSymbol ("redGain"),
-      Boolean::New (settings->white_balance.red_gain));
+      Uint32::New (settings->white_balance.red_gain));
   obj_nested->Set (String::NewSymbol ("blueGain"),
-      Boolean::New (settings->white_balance.blue_gain));
+      Uint32::New (settings->white_balance.blue_gain));
   obj->Set (String::NewSymbol ("whiteBalance"), obj_nested);
   
   obj->Set (String::NewSymbol ("imageFilter"),
@@ -477,13 +477,14 @@ void camera_settings_to_obj (
   obj->Set (String::NewSymbol ("drc"), Int32::New (settings->drc));
   
   obj_nested = Object::New ();
-  obj_nested->Set (String::NewSymbol ("top"), Boolean::New (settings->roi.top));
+  obj_nested->Set (String::NewSymbol ("top"),
+      Number::New (settings->roi.top/100.0));
   obj_nested->Set (String::NewSymbol ("left"),
-      Boolean::New (settings->roi.left));
+      Number::New (settings->roi.left/100.0));
   obj_nested->Set (String::NewSymbol ("width"),
-      Boolean::New (settings->roi.width));
+      Number::New (settings->roi.width/100.0));
   obj_nested->Set (String::NewSymbol ("height"),
-      Boolean::New (settings->roi.height));
+      Number::New (settings->roi.height/100.0));
   obj->Set (String::NewSymbol ("roi"), obj_nested);
   
   obj->Set (String::NewSymbol ("framerate"), Uint32::New (settings->framerate));
@@ -508,7 +509,7 @@ void h264_settings_to_obj (
   obj_nested_2->Set (String::NewSymbol ("enabled"),
       Boolean::New (settings->eede.enabled));
   obj_nested_2->Set (String::NewSymbol ("lossRate"),
-      Uint32::New (settings->eede.loss_rate));
+      Number::New (settings->eede.loss_rate/100.0));
   obj_nested->Set (String::NewSymbol ("eede"), obj_nested_2);
   
   obj_nested->Set (String::NewSymbol ("profile"),
